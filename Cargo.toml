@@ -6,4 +6,5 @@ description = ""
 readme = "README.md"
 
 [dependencies]
-ctrlc = { version = "3.0", features = ["termination"] }
+ctrlc = "3.0"
+shlex = "1.0.0"

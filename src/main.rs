@@ -1,7 +1,10 @@
 extern crate ctrlc;
+extern crate shlex;
+
 mod commands;
 
 // use std::process::Command;
+use shlex::split;
 use ctrlc::set_handler;
 use std::io::{
     stdin,
@@ -12,7 +15,8 @@ use std::io::{
 use commands::{
     cd,
     exit,
-    dir
+    dir,
+    echo
 };
 
 fn main() {
@@ -45,7 +49,7 @@ fn main() {
         // let mut prev = None;
 
         while let Some(commands) = commands.next() {
-            let mut parts = commands.trim().split_whitespace();
+            let mut parts = split(commands).unwrap().into_iter();
             let command = parts.next();
 
             if command == None {
@@ -54,10 +58,11 @@ fn main() {
 
             let args = parts;
 
-            match command.unwrap() {
+            match command.as_ref().unwrap().as_str() {
                 "dir" => dir::dir(args),
                 "cd" => cd::cd(args),
                 "exit" => return exit::exit(),
+                "echo" => echo::echo(args),
                 _ => println!("RustyShell: {:?}: Command not found", command)
             }
         }

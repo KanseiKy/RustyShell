@@ -1,8 +1,7 @@
-// use std::path::PathBuf;
 use std::fs;
 
-pub fn dir(dir: std::str::SplitWhitespace) -> () {
-    let target = dir.peekable().peek().map_or("./", |x| *x);
+pub fn dir(mut dir: std::vec::IntoIter<String>) -> () {
+    let target = dir.next().unwrap_or("./".to_owned());
     let paths = fs::read_dir(target).unwrap();
 
 
