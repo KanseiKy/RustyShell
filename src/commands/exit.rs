@@ -1,4 +1,4 @@
-pub fn exit() -> () {
+pub fn exit() -> ! {
     println!("Exiting...");
-    return
+    std::process::exit(0);
 }
