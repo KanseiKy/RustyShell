@@ -3,13 +3,13 @@ extern crate shlex;
 
 mod commands;
 
-// use std::process::Command;
+use std::process::{Command, Stdio, Child};
 use shlex::split;
 use ctrlc::set_handler;
 use std::io::{
     stdin,
     stdout,
-    Write
+    Write,
 };
 
 use commands::{
@@ -46,24 +46,52 @@ fn main() {
 
         
         let mut commands = input.trim().split(" | ").peekable();
-        // let mut prev = None;
+        let mut prev = None;
 
-        while let Some(commands) = commands.next() {
-            let mut parts = split(commands).unwrap().into_iter();
+        while let Some(command) = commands.next() {
+            let mut parts = split(command).unwrap().into_iter();
             let command = parts.next();
 
             if command == None {
-                return exit::exit();
+                continue;
             }
 
             let args = parts;
 
             match command.as_ref().unwrap().as_str() {
-                "dir" => dir::dir(args),
-                "cd" => cd::cd(args),
+                "dir" => { dir::dir(args); prev = None; },
+                "cd" => { cd::cd(args); prev = None; },
                 "exit" => return exit::exit(),
                 "echo" => echo::echo(args),
-                _ => println!("RustyShell: {:?}: Command not found", command)
+                command => {
+                    let stdin = prev.map_or(
+                        Stdio::inherit(),
+                        |out: Child| Stdio::from(out.stdout.unwrap())
+                    );
+
+                    let stdout = if commands.peek().is_some() {
+                        Stdio::piped()
+                    } else {
+                        Stdio::inherit()
+                    };
+
+                    let out = Command::new(command)
+                        .args(args)
+                        .stdin(stdin)
+                        .stdout(stdout)
+                        .spawn();
+
+                    match out {
+                        Ok(out) => {
+                            prev = Some(out);
+                        },
+
+                        Err(_) => {
+                            prev = None;
+                            println!("RustyShell: {}: Command not found", command)
+                        }
+                    }
+                }
             }
         }
     }

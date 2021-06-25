@@ -8,3 +8,4 @@ readme = "README.md"
 [dependencies]
 ctrlc = "3.0"
 shlex = "1.0.0"
+which = "4.1.0"
